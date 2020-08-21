@@ -8,9 +8,8 @@ PRN = 0b01000111
 MUL = 0b10100010
 POP = 0b01000110
 PUSH = 0b01000101
-CALL = 0b01010000
-RET = 0b00010001
-ADD = 0b10100000
+CMP = 0b10100111
+
 
 class CPU:
     """Main CPU class."""
@@ -20,6 +19,7 @@ class CPU:
         self.ram = [0] * 256    # ram
         self.pc = 0             # program counter
         self.sp = 0xF4          # spack pointer (F3 start of Stack)
+        self.flag = 0b0           # set 00000LGE
         self.running = True     # CPU running
         self.branch_table = {}  # modularize code
         self.branch_table[HLT] = self.hlt
@@ -28,9 +28,7 @@ class CPU:
         self.branch_table[MUL] = self.mul
         self.branch_table[PUSH] = self.push
         self.branch_table[POP] = self.pop
-        self.branch_table[CALL] = self.call
-        self.branch_table[RET] = self.ret
-        self.branch_table[ADD] = self.add
+        self.branch_table[CMP] = self.cmpf
 
     def ram_read(self, MAR):
         '''take in address and return value'''
@@ -64,32 +62,6 @@ class CPU:
         # OR (set to 1)
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
-        # elif op == "SUB": 
-        #     pass
-        # elif op == "AND": 
-        #     pass
-        # elif op == "CMP": 
-        #     pass
-        # elif op == "DEC": 
-        #     pass
-        # elif op == "DIV": 
-        #     pass
-        # elif op == "INC": 
-        #     pass
-        # elif op == "MOD": 
-        #     pass
-        # elif op == "MUL": 
-        #     pass
-        # elif op == "NOT": 
-        #     pass
-        # elif op == "OR": 
-        #     pass
-        # elif op == "SHL": 
-        #     pass
-        # elif op == "SHR": 
-        #     pass
-        # elif op == "XOR": 
-        #     pass
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -150,21 +122,14 @@ class CPU:
         self.sp += 1
         self.pc += 2
 
-    def call(self, operand_a=None, operand_b=None):
-        '''Calls subroutine at the address stored in the register.'''
-        # push next instruction onto the stack
-        self.push(self.ram[operand_b])
-        # set pc to subroutine address in given register 
-        # jump to the location in ram and execute instruction
-        self.pc = self.reg[operand_a]
-
-    def ret(self, operand_a=None, operand_b=None):
-        # '''Return from subroutine.'''
-        # # pop value from top of stack and store it in the PC
-        # self.pc = self.pop(self.ram[self.sp])
-        pass
-    
-
+    def cmpf(self, operand_a=None, operand_b=None):
+        '''set flag'''
+        if self.reg[operand_a] == self.reg[operand_b]:
+            self.flag = 0b00000001
+        elif self.reg[operand_a] > self.reg[operand_b]:
+            self.flag = 0b00000010
+        elif self.reg[operand_a] < self.reg[operand_b]:
+            self.flag = 0b00000100
 
     def run(self):
         """Run the CPU."""
