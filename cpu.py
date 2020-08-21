@@ -9,6 +9,9 @@ MUL = 0b10100010
 POP = 0b01000110
 PUSH = 0b01000101
 CMP = 0b10100111
+JMP = 0b01010100
+JEQ = 0b01010101
+JNE = 0b01010110
 
 
 class CPU:
@@ -29,6 +32,9 @@ class CPU:
         self.branch_table[PUSH] = self.push
         self.branch_table[POP] = self.pop
         self.branch_table[CMP] = self.cmpf
+        self.branch_table[JMP] = self.jmp
+        self.branch_table[JEQ] = self.jeq
+        self.branch_table[JNE] = self.jne
 
     def ram_read(self, MAR):
         '''take in address and return value'''
@@ -130,6 +136,25 @@ class CPU:
             self.flag = 0b00000010
         elif self.reg[operand_a] < self.reg[operand_b]:
             self.flag = 0b00000100
+        self.pc += 3
+
+    def jmp(self, operand_a=None, operand_b=None):
+        '''jump to address stored in given register'''
+        self.pc = self.reg[operand_a]
+
+    def jeq(self, operand_a=None, operand_b=None):
+        '''if E flag true, jump to address stored in given register'''
+        if self.flag == 0b00000001:
+            self.pc = self.reg[operand_a]
+        else:
+            self.pc += 2
+
+    def jne(self, operand_a=None, operand_b=None):
+        '''if E flag false, jump to address stored in given register'''
+        if self.flag != 0b00000001:
+            self.pc = self.reg[operand_a]
+        else:
+            self.pc += 2
 
     def run(self):
         """Run the CPU."""
