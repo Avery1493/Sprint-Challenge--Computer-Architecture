@@ -13,7 +13,6 @@ JMP = 0b01010100
 JEQ = 0b01010101
 JNE = 0b01010110
 
-
 class CPU:
     """Main CPU class."""
     def __init__(self):
@@ -22,7 +21,7 @@ class CPU:
         self.ram = [0] * 256    # ram
         self.pc = 0             # program counter
         self.sp = 0xF4          # spack pointer (F3 start of Stack)
-        self.flag = 0b0           # set 00000LGE
+        self.flag = 0b0         # set 00000LGE
         self.running = True     # CPU running
         self.branch_table = {}  # modularize code
         self.branch_table[HLT] = self.hlt
@@ -111,7 +110,6 @@ class CPU:
         '''add values in two registers and store at registerA.'''
         self.reg[operand_a] += self.reg[operand_b]
         self.pc += 3
-
     def push(self, operand_a=None, operand_b=None):
         '''Push the value in the given register on the stack'''
         # decrement the SP
@@ -119,7 +117,6 @@ class CPU:
         # copy value in given register to the address pointed to by sp
         self.ram[self.sp] = self.reg[operand_a]
         self.pc += 2
-
     def pop(self, operand_a=None, operand_b=None):
         '''Pop the value at the top of the stack into the given register.'''
         # copy value from the address pointed to by sp to given register
@@ -127,7 +124,6 @@ class CPU:
         # increment the SP
         self.sp += 1
         self.pc += 2
-
     def cmpf(self, operand_a=None, operand_b=None):
         '''set flag'''
         if self.reg[operand_a] == self.reg[operand_b]:
@@ -137,23 +133,22 @@ class CPU:
         elif self.reg[operand_a] < self.reg[operand_b]:
             self.flag = 0b00000100
         self.pc += 3
-
     def jmp(self, operand_a=None, operand_b=None):
         '''jump to address stored in given register'''
         self.pc = self.reg[operand_a]
-
     def jeq(self, operand_a=None, operand_b=None):
         '''if E flag true, jump to address stored in given register'''
         if self.flag == 0b00000001:
             self.pc = self.reg[operand_a]
         else:
+            # skip
             self.pc += 2
-
     def jne(self, operand_a=None, operand_b=None):
         '''if E flag false, jump to address stored in given register'''
         if self.flag != 0b00000001:
             self.pc = self.reg[operand_a]
         else:
+            # skip
             self.pc += 2
 
     def run(self):
